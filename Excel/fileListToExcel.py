@@ -34,7 +34,7 @@ def create_excel_file(folder_path):
             ws[f"C{row_num}"] = os.path.abspath(os.path.join(root, name))
 
             # 파일/폴더 이름에 하이퍼링크 추가
-            hyperlink = f'HYPERLINK("{os.path.abspath(os.path.join(root, name))}", "{name}")'
+            hyperlink = os.path.abspath(os.path.join(root, name))
             ws[f"A{row_num}"].hyperlink = hyperlink
 
             row_num += 1
