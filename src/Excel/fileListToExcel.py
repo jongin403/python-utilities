@@ -16,9 +16,11 @@ def add_file_info(ws, root, files, folder_path, row_num):
             row_data = folder_structure_list + [name]
 
         for i, folder_name in enumerate(row_data):
-            # 파일/폴더 이름에 하이퍼링크 추가
-            hyperlink = os.path.abspath(os.path.join(root, name))
-            ws.cell(row=row_num, column=i+1, value=folder_name).hyperlink = hyperlink
+            cell = ws.cell(row=row_num, column=i+1, value=folder_name)
+            # 파일 이름이 있는 셀에만 하이퍼링크 추가
+            if folder_name == name:
+                hyperlink = os.path.abspath(os.path.join(root, name))
+                cell.hyperlink = hyperlink
 
         row_num += 1
     return row_num
