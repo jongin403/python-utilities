@@ -12,7 +12,12 @@ def add_folder_info(ws, folder_path, row_num):
             folder_structure_list = folder_structure.split(os.path.sep)
 
             for name in files:
-                row_data = folder_structure_list + [name]
+                # If the file is directly under the input folder, do not include the folder name
+                if folder_structure == '.':
+                    row_data = [name]
+                else:
+                    row_data = folder_structure_list + [name]
+
                 for i, folder_name in enumerate(row_data):
                     # 파일/폴더 이름에 하이퍼링크 추가
                     hyperlink = os.path.abspath(os.path.join(root, name))
