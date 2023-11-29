@@ -2,9 +2,35 @@ import os
 import openpyxl
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
-from openpyxl.drawing.image import Image
-import platform
+import sys
 from datetime import datetime
+
+def add_folder_info(ws, folder_path, row_num):
+    for root, dirs, files in os.walk(folder_path):
+        folder_structure = os.path.relpath(root, folder_path)
+        folder_structure_list = folder_structure.split(os.path.sep)
+
+        row_data = []
+
+        for folder_name in folder_structure_list:
+            row_data.append(folder_name)
+            ws.append(row_data)
+
+            # 파일/폴더 이름에 하이퍼링크 추가
+            hyperlink = os.path.abspath(root)
+            ws[f"{get_column_letter(len(row_data))}{row_num}"].hyperlink = hyperlink
+
+            row_num += 1
+
+        for name in files:
+            row_data.append(name)
+            ws.append(row_data)
+
+            # 파일/폴더 이름에 하이퍼링크 추가
+            hyperlink = os.path.abspath(os.path.join(root, name))
+            ws[f"{get_column_letter(len(row_data))}{row_num}"].hyperlink = hyperlink
+
+            row_num += 1
 
 def create_excel_file(folder_path):
     # 부모 폴더 경로 추출
@@ -18,26 +44,9 @@ def create_excel_file(folder_path):
     ws = wb.active
     ws.title = "File list to Excel"
 
-    # 열 헤더 설정
-    headers = ["파일/폴더 이름", "타입", "경로"]
-    for col_num, header in enumerate(headers, 1):
-        col_letter = get_column_letter(col_num)
-        ws[f"{col_letter}1"] = header
-        ws[f"{col_letter}1"].font = Font(bold=True)
-
     # 폴더 구조를 순회하며 Excel 시트에 정보 추가
-    row_num = 2
-    for root, dirs, files in os.walk(folder_path):
-        for name in dirs + files:
-            ws[f"A{row_num}"] = name
-            ws[f"B{row_num}"] = "Folder" if os.path.isdir(os.path.join(root, name)) else "File"
-            ws[f"C{row_num}"] = os.path.abspath(os.path.join(root, name))
-
-            # 파일/폴더 이름에 하이퍼링크 추가
-            hyperlink = os.path.abspath(os.path.join(root, name))
-            ws[f"A{row_num}"].hyperlink = hyperlink
-
-            row_num += 1
+    row_num = 1
+    add_folder_info(ws, folder_path, row_num)
 
     # 부모 폴더에 타임스탬프가 추가된 Excel 파일 저장
     excel_file_name = f"FileList_{timestamp}.xlsx"
@@ -47,17 +56,18 @@ def create_excel_file(folder_path):
     return excel_file_path
 
 def open_file(file_path):
-    system = platform.system()
-    if system == "Windows":
+    system = sys.platform
+    if system.startswith("win"):
         os.system(f'start "" "{file_path}"')
-    elif system == "Darwin":  # macOS
+    elif system == "darwin":  # macOS
         os.system(f'open "{file_path}"')
     else:
-        print("Windows 와 macOS 만 지원합니다.")
+        print("Windows와 macOS만 지원합니다.")
 
 def main():
-    print("특정 폴더 아래에 있는 파일과 폴더 리스트를 Excel 로 출력해주는 프로그램입니다.")
-    folder_path = input("폴더의 절대 경로를 입력하세요: ")
+    print("특정 폴더 아래에 있는 파일과 폴더 리스트를 Excel로 출력해주는 프로그램입니다.")
+    print("폴더의 절대 경로를 입력하세요: ")
+    folder_path = input()
 
     if not os.path.exists(folder_path):
         print("지정한 폴더 경로가 존재하지 않습니다.")
