@@ -7,30 +7,18 @@ from datetime import datetime
 
 def add_folder_info(ws, folder_path, row_num):
     for root, dirs, files in os.walk(folder_path):
-        folder_structure = os.path.relpath(root, folder_path)
-        folder_structure_list = folder_structure.split(os.path.sep)
+        if files:  # Only process directories that contain files
+            folder_structure = os.path.relpath(root, folder_path)
+            folder_structure_list = folder_structure.split(os.path.sep)
 
-        row_data = []
+            for name in files:
+                row_data = folder_structure_list + [name]
+                for i, folder_name in enumerate(row_data):
+                    # 파일/폴더 이름에 하이퍼링크 추가
+                    hyperlink = os.path.abspath(os.path.join(root, name))
+                    ws.cell(row=row_num, column=i+1, value=folder_name).hyperlink = hyperlink
 
-        for folder_name in folder_structure_list:
-            row_data.append(folder_name)
-            ws.append(row_data)
-
-            # 파일/폴더 이름에 하이퍼링크 추가
-            hyperlink = os.path.abspath(root)
-            ws[f"{get_column_letter(len(row_data))}{row_num}"].hyperlink = hyperlink
-
-            row_num += 1
-
-        for name in files:
-            row_data.append(name)
-            ws.append(row_data)
-
-            # 파일/폴더 이름에 하이퍼링크 추가
-            hyperlink = os.path.abspath(os.path.join(root, name))
-            ws[f"{get_column_letter(len(row_data))}{row_num}"].hyperlink = hyperlink
-
-            row_num += 1
+                row_num += 1
 
 def create_excel_file(folder_path):
     # 부모 폴더 경로 추출
