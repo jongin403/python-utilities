@@ -14,4 +14,4 @@ pip3 install pyinstaller
 
 ### 단일한 실행파일 생성
 
-pyinstaller --onefile {target_script.py}
+pyinstaller -F {target_script.py}
