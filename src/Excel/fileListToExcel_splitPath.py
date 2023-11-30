@@ -3,34 +3,48 @@ import openpyxl
 import sys
 from datetime import datetime
 
-# 각 파일에 대한 정보를 워크시트에 추가하는 함수
-def add_file_info(ws, root, files, folder_path, row_num):
+# 각 파일 및 폴더에 대한 정보를 워크시트에 추가하는 함수
+def add_file_folder_info(ws, root, files, dirs, folder_path, row_num, last_folder_structure_list):
     folder_structure = os.path.relpath(root, folder_path)
     folder_structure_list = folder_structure.split(os.path.sep)
 
-    for name in files:
-        # 입력 폴더 바로 아래에 있는 파일이면 폴더 이름을 포함하지 않음
+    # 폴더 정보 추가
+    for name in dirs:
         if folder_structure == '.':
             row_data = [name]
         else:
             row_data = folder_structure_list + [name]
+        row_num = add_row(ws, row_data, last_folder_structure_list, row_num)
 
-        for i, folder_name in enumerate(row_data):
+    # 파일 정보 추가
+    for name in files:
+        if folder_structure == '.':
+            row_data = [name]
+        else:
+            row_data = folder_structure_list + [name]
+        row_num = add_row(ws, row_data, last_folder_structure_list, row_num)
+
+    return row_num, folder_structure_list
+
+def add_row(ws, row_data, last_folder_structure_list, row_num):
+    for i, folder_name in enumerate(row_data):
+        if i < len(last_folder_structure_list) and folder_name == last_folder_structure_list[i]:
+            cell = ws.cell(row=row_num, column=i+1, value="")
+        else:
             cell = ws.cell(row=row_num, column=i+1, value=folder_name)
             # 파일 이름이 있는 셀에만 하이퍼링크 추가
-            if folder_name == name:
-                hyperlink = os.path.abspath(os.path.join(root, name))
+            if "file" in folder_name:
+                hyperlink = os.path.abspath(os.path.join(*row_data))
                 cell.hyperlink = hyperlink
-
-        row_num += 1
+    row_num += 1
     return row_num
 
 # 폴더 정보를 워크시트에 추가
 def add_folder_info(ws, folder_path):
     row_num = 1
+    last_folder_structure_list = []
     for root, dirs, files in os.walk(folder_path):
-        if files:  # 파일이 있는 폴더만 처리
-            row_num = add_file_info(ws, root, files, folder_path, row_num)
+        row_num, last_folder_structure_list = add_file_folder_info(ws, root, files, dirs, folder_path, row_num, last_folder_structure_list)
 
 def create_excel_file(folder_path):
     parent_folder_path = os.path.dirname(folder_path)
