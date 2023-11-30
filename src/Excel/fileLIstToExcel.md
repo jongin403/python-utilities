@@ -17,11 +17,10 @@ gpt prompt
 
 2번
 fileA
-folderA
-[] | folderAA
-[] | [] | fileAAA
+folderA | folderAA | fileAAA
 [] | [] | fileAAB
-folderB
-[] | fileBB
+folderB | fileBB
 
 폴더의 경로를 기반으로 중복을 검사해서 중복된 폴더 경로일 경우 빈 cell 로 나타내줘
+폴더 안에 파일과 폴더가 없을 경우에는 표시를 해줘야하고
+폴더 안에 파일과 폴더가 있는 경우에는 하위 폴더를 탐색해야해

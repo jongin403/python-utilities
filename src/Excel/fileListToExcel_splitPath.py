@@ -37,8 +37,9 @@ def add_folder_info(ws, root, folder_path, row_num, last_folder_structure_list):
 
     for name in items:
         path = os.path.join(root, name)
-        row_num, last_folder_structure_list = add_file_folder_info(ws, root, [name], folder_path, row_num, last_folder_structure_list)
-        if os.path.isdir(path):
+        if os.path.isfile(path) or not os.listdir(path):  # 파일이거나 비어있는 폴더인 경우에만 출력
+            row_num, last_folder_structure_list = add_file_folder_info(ws, root, [name], folder_path, row_num, last_folder_structure_list)
+        if os.path.isdir(path) and os.listdir(path):  # 폴더 내에 파일이나 하위 폴더가 있을 경우 하위 폴더를 탐색
             row_num, last_folder_structure_list = add_folder_info(ws, path, folder_path, row_num, last_folder_structure_list)
 
     return row_num, last_folder_structure_list
