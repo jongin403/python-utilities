@@ -10,7 +10,7 @@ def add_row(ws, row_data, last_folder_structure_list, row_num, root):
         else:
             cell = ws.cell(row=row_num, column=i+1, value=folder_name)
             # 파일 이름이 있는 셀에만 하이퍼링크 추가
-            if "file" in folder_name:
+            if os.path.isfile(os.path.join(root, *row_data)):
                 hyperlink = os.path.abspath(os.path.join(root, *row_data))
                 cell.hyperlink = hyperlink
     row_num += 1
