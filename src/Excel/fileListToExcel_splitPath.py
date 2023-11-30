@@ -33,16 +33,13 @@ def add_file_folder_info(ws, root, names, folder_path, row_num, last_folder_stru
 # 폴더 정보를 워크시트에 추가
 def add_folder_info(ws, root, folder_path, row_num, last_folder_structure_list):
     names = sorted(os.listdir(root))
-    dirs = [name for name in names if os.path.isdir(os.path.join(root, name))]
-    files = [name for name in names if os.path.isfile(os.path.join(root, name))]
+    items = [name for name in names if os.path.isdir(os.path.join(root, name)) or os.path.isfile(os.path.join(root, name))]
 
-    row_num, last_folder_structure_list = add_file_folder_info(ws, root, dirs, folder_path, row_num, last_folder_structure_list)
-
-    for name in dirs:
+    for name in items:
         path = os.path.join(root, name)
-        row_num, last_folder_structure_list = add_folder_info(ws, path, folder_path, row_num, last_folder_structure_list)
-
-    row_num, last_folder_structure_list = add_file_folder_info(ws, root, files, folder_path, row_num, last_folder_structure_list)
+        row_num, last_folder_structure_list = add_file_folder_info(ws, root, [name], folder_path, row_num, last_folder_structure_list)
+        if os.path.isdir(path):
+            row_num, last_folder_structure_list = add_folder_info(ws, path, folder_path, row_num, last_folder_structure_list)
 
     return row_num, last_folder_structure_list
 
