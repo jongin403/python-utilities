@@ -36,6 +36,41 @@ def get_large_categories(df):
 def get_compare_result(df1, df2, large_categories1, large_categories2):
     results = [] # 결과를 담을 리스트 초기화
 
+    # large_categories1 를 순회하면서 df1 과 df2 에서 LARGE_CATEGORY_INDEX 에 해당하는 열의 값이 일치하는 행을 찾기
+    for category in large_categories1:
+        df1_rows = df1[df1[LARGE_CATEGORY_INDEX] == category]
+        df2_rows = df2[df2[LARGE_CATEGORY_INDEX] == category]
+        # df1_rows 를 순회하면서 IDENTIFIER_NAME 에 해당하는 열의 값이 일치하는 df2_rows 값이 있을 경우, 없을 경우 구분
+        for index, row1 in df1_rows.iterrows():
+            identifier = row1[IDENTIFIER_NAME]
+            matching_rows = df2_rows[df2_rows[IDENTIFIER_NAME] == identifier]
+            print(matching_rows)
+            # 일치하는 값이 있을 경우
+            if not matching_rows.empty:
+                # matching_rows 와 row1 을 비교하여 다른 값이 있을 경우
+                if matching_rows.equals(row1):
+                    continue
+                # 첫번째 column 에 "당초" 표시 후 그 다음 칼럼부터 row1 와 동일한 데이터로 row 추가"
+                row1_values = row1.values.tolist()
+                row1_values[0] = "당초"
+                results.append(row1_values)
+                # 첫번째 column 에 "변경" 표시 후 그 다음 칼럼부터 matching_rows 와 동일한 데이터로 row 추가"
+                matching_rows_values = matching_rows.values.tolist()
+                matching_rows_values[0] = "변경"
+                results.append(matching_rows_values)
+    print(results)
+            # else:
+            #     # 첫번째 column 에 "제거" 표시 후 그 다음 칼럼부터 동일한 데이터로 row 추가
+
+    # large_categories2 를 순회하는데 large_categories1 에 포함된 값을 제외하고 df1 과 df2 에서 LARGE_CATEGORY_INDEX 에 해당하는 열의 값이 일치하는 행을 찾기
+    # for category in large_categories2:
+    #     if category not in large_categories1:
+    #         continue
+    #     df1_rows = df1[df1[LARGE_CATEGORY_INDEX] == category]
+    #     df2_rows = df2[df2[LARGE_CATEGORY_INDEX] == category]
+    #     # Compare the rows and append the results to the 'results' list
+    #     # ...
+
     # TO-DO
     # large_categories1, large_categories2 순으로 순회하고, 일치하는 요소가 있을 경우 비교한다.
     # 각각의 large_categories 는 df[IDENTIFIER_NAME] 로 비교한다.
