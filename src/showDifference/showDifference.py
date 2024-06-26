@@ -72,24 +72,35 @@ def get_compare_result(df1, df2, large_categories):
                 row1_values = row1.values.tolist()
                 row1_values.insert(0, "제거")  # 첫 번째 위치에 "제거"를 삽입
                 results.append(row1_values)
+        # df2_rows 를 순회하면서 IDENTIFIER_NAME 에 해당하는 열의 값이 일치하는 df1_rows 값이 없을 경우, 구분
+        for index, row2 in df2_rows.iterrows():
+            identifier = row2[IDENTIFIER_NAME]
+            matching_rows = df1_rows[df1_rows[IDENTIFIER_NAME] == identifier]
+            # 일치하는 값이 없을 경우
+            if matching_rows.empty:
+                # 첫번째 column 에 "추가" 표시 후 그 다음 칼럼부터 동일한 데이터로 row 추가
+                row2_values = row2.values.tolist()
+                row2_values.insert(0, "추가")  # 첫 번째 위치에 "추가"를 삽입
+                results.append(row2_values)
 
-    for row in results:
-            print(*row, sep='\t')
+    #show_pretty_results(results)
     return results
 
-# 결과를 데이터프레임으로 변환하고 엑셀 파일에 추가하는 함수
-def append_results_to_excel(results, df1_columns):
-    book = openpyxl.load_workbook(TARGET_EXCEL_PATH)
+def show_pretty_results(results):
+    for row in results:
+        print(*row, sep='\t')
 
-    # 결과 데이터프레임 생성
-    df3 = pd.DataFrame(results, columns=[f"{col}" for col in df1_columns if col not in TARGET_ID_LIST + [IDENTIFIER_NAME]])
-
-    # ExcelWriter를 사용하여 기존 파일에 시트 추가
-    with pd.ExcelWriter(TARGET_EXCEL_PATH, engine='openpyxl', mode='a') as writer:
-        writer.book = book
-        df3.to_excel(writer, sheet_name=RESULT_SHEET_NAME, index=False)
-
-    writer.save()
+# 결과를 엑셀 파일의 시트에 추가하는 함수
+def append_results_to_excel(results, target_excel_path, sheet_name):
+    # 엑셀 파일 읽기
+    wb = openpyxl.load_workbook(target_excel_path)
+    # 시트 선택
+    sheet = wb[sheet_name]
+    # 결과를 시트에 추가
+    for row in results:
+        sheet.append(row)
+    # 변경사항 저장
+    wb.save(target_excel_path)
 
 def main():
     # 엑셀 파일에서 각 시트 읽기
@@ -102,7 +113,7 @@ def main():
     # 비교 및 결과 추가 함수 호출
     difference = get_compare_result(df1, df2, large_categories)
 
-    # append_results_to_excel
+    #append_results_to_excel(difference, TARGET_EXCEL_PATH, RESULT_SHEET_NAME)
 
 if __name__ == "__main__":
     main()
