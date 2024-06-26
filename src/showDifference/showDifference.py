@@ -28,16 +28,25 @@ def combine_columns(df, target_column_index_list):
             combined_columns.append('')
     return combined_columns
 
-def get_large_categories(df):
-    column_values = df.iloc[:, LARGE_CATEGORY_INDEX].tolist()
-    distinct_values = list(set(value for value in column_values if value != ''))
+# df1, df2 에서 LARGE_CATEGORY_INDEX 에 해당하는 열의 값이 일치하는 행을 찾아 반환하며 df1, df2 순으로 중복없는 값을 반환
+def get_large_categories(df1, df2, target_index):
+    column_values1 = df1.iloc[:, target_index].tolist()
+    column_values2 = df2.iloc[:, target_index].tolist()
+    filtered_values2 = [value for value in column_values2 if value not in column_values1]
+    distinct_values = []
+    for value in column_values1 + filtered_values2:
+        if value == '':
+            continue
+        if value in distinct_values:
+            continue
+        distinct_values.append(value)
     return distinct_values
 
-def get_compare_result(df1, df2, large_categories1, large_categories2):
+def get_compare_result(df1, df2, large_categories):
     results = [] # 결과를 담을 리스트 초기화
 
-    # large_categories1 를 순회하면서 df1 과 df2 에서 LARGE_CATEGORY_INDEX 에 해당하는 열의 값이 일치하는 행을 찾기
-    for category in large_categories1:
+    # large_categories 를 순회하면서 df1 과 df2 에서 LARGE_CATEGORY_INDEX 에 해당하는 열의 값이 일치하는 행을 찾기
+    for category in large_categories:
         df1_rows = df1[df1[LARGE_CATEGORY_INDEX] == category]
         df2_rows = df2[df2[LARGE_CATEGORY_INDEX] == category]
         # df1_rows 를 순회하면서 IDENTIFIER_NAME 에 해당하는 열의 값이 일치하는 df2_rows 값이 있을 경우, 없을 경우 구분
@@ -63,25 +72,9 @@ def get_compare_result(df1, df2, large_categories1, large_categories2):
                 row1_values = row1.values.tolist()
                 row1_values.insert(0, "제거")  # 첫 번째 위치에 "제거"를 삽입
                 results.append(row1_values)
-        for row in results:
+
+    for row in results:
             print(*row, sep='\t')
-
-    # large_categories2 를 순회하는데 large_categories1 에 포함된 값을 제외하고 df1 과 df2 에서 LARGE_CATEGORY_INDEX 에 해당하는 열의 값이 일치하는 행을 찾기
-    # for category in large_categories2:
-    #     if category not in large_categories1:
-    #         continue
-    #     df1_rows = df1[df1[LARGE_CATEGORY_INDEX] == category]
-    #     df2_rows = df2[df2[LARGE_CATEGORY_INDEX] == category]
-    #     # Compare the rows and append the results to the 'results' list
-    #     # ...
-
-    # TO-DO
-    # large_categories1, large_categories2 순으로 순회하고, 일치하는 요소가 있을 경우 비교한다.
-    # 각각의 large_categories 는 df[IDENTIFIER_NAME] 로 비교한다.
-    # large_categories1 에만 요소가 있을 경우 맨 처음 칼럼에 "제거" 후 동일한 데이터 대로 row 를 한줄 추가한다.
-    # large_categories2 에만 요소가 있을 경우 맨 처음 칼럼에 "추가" 후 동일한 데이터 대로 row 를 한줄 추가한다.
-    # large_categories1, large_categories2 가 다를 경우 각각 동일한 데이터 대로 row 를 한줄씩 총 두줄을 추가한다.
-    # 첫번째 row sms "당초" 두번째 row 는 "변경"
     return results
 
 # 결과를 데이터프레임으로 변환하고 엑셀 파일에 추가하는 함수
@@ -104,11 +97,10 @@ def main():
     df2 = preprocess_excel_sheet(COMPARE_SHEET_NAME2)
 
     # 대분야 리스트
-    large_categories1 = get_large_categories(df1)
-    large_categories2 = get_large_categories(df2)
+    large_categories = get_large_categories(df1, df2, LARGE_CATEGORY_INDEX)
 
     # 비교 및 결과 추가 함수 호출
-    difference = get_compare_result(df1, df2, large_categories1, large_categories2)
+    difference = get_compare_result(df1, df2, large_categories)
 
     # append_results_to_excel
 
