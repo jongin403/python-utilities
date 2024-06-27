@@ -95,6 +95,9 @@ def append_results_to_excel(results, target_excel_path, sheet_name):
     # 엑셀 파일 읽기
     wb = openpyxl.load_workbook(target_excel_path)
     # 시트 선택
+    if sheet_name in wb.sheetnames:
+        del wb[sheet_name]
+    wb.create_sheet(sheet_name)
     sheet = wb[sheet_name]
     # 결과를 시트에 추가
     for row in results:
@@ -113,7 +116,7 @@ def main():
     # 비교 및 결과 추가 함수 호출
     difference = get_compare_result(df1, df2, large_categories)
 
-    #append_results_to_excel(difference, TARGET_EXCEL_PATH, RESULT_SHEET_NAME)
+    append_results_to_excel(difference, TARGET_EXCEL_PATH, RESULT_SHEET_NAME)
 
 if __name__ == "__main__":
     main()
